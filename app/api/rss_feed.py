@@ -1,19 +1,22 @@
-from readyapi import APIRouter, Query, HTTPException
 from typing import List, Optional
-import requests
+
 import feedparser
+import requests
 from bs4 import BeautifulSoup
+from readyapi import APIRouter, HTTPException, Query
 
 router = APIRouter()
 
 HACKER_NEWS_FEED = "https://feeds.feedburner.com/TheHackersNews?format=xml"
 GRAHAM_CLULEY_FEED = "https://grahamcluley.com/feed/"
 
+
 def clean_html(text: str) -> str:
     if not text:
         return ""
     soup = BeautifulSoup(text, "html.parser")
     return soup.get_text()
+
 
 def parse_feed(url: str) -> List[dict]:
     resp = requests.get(url, timeout=10)
@@ -22,9 +25,12 @@ def parse_feed(url: str) -> List[dict]:
     feed = feedparser.parse(resp.content)
     cleaned_entries = []
     for entry in feed.entries:
-        cleaned_entry = {k: clean_html(str(v)) if isinstance(v, str) else v for k, v in entry.items()}
+        cleaned_entry = {
+            k: clean_html(str(v)) if isinstance(v, str) else v for k, v in entry.items()
+        }
         cleaned_entries.append(cleaned_entry)
     return cleaned_entries
+
 
 @router.get("/")
 async def get_rss_feed(source: Optional[str] = Query("hacker-news")):
@@ -35,4 +41,4 @@ async def get_rss_feed(source: Optional[str] = Query("hacker-news")):
             feed.extend(parse_feed(HACKER_NEWS_FEED))
         if src == "graham-cluley":
             feed.extend(parse_feed(GRAHAM_CLULEY_FEED))
-    return feed 
+    return feed

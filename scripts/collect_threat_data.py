@@ -1,14 +1,17 @@
+import asyncio
 import logging
-from datetime import datetime
 import os
+from datetime import datetime
+
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from motor.motor_asyncio import AsyncIOMotorClient
-import asyncio
 from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s"
+)
 logger = logging.getLogger("collect_threat_data")
 
 load_dotenv()
@@ -19,11 +22,13 @@ MONGO_DB = os.getenv("MONGO_DB", "data_server")
 HACKER_NEWS_FEED = "https://feeds.feedburner.com/TheHackersNews?format=xml"
 GRAHAM_CLULEY_FEED = "https://grahamcluley.com/feed/"
 
+
 def clean_html(text: str) -> str:
     if not text:
         return ""
     soup = BeautifulSoup(text, "html.parser")
     return soup.get_text()
+
 
 async def fetch_and_store_feed(db, feed_url, source_name):
     logger.info(f"Fetching {source_name} feed...")
@@ -34,7 +39,9 @@ async def fetch_and_store_feed(db, feed_url, source_name):
     feed = feedparser.parse(resp.content)
     new_count = 0
     for entry in feed.entries:
-        entry_clean = {k: clean_html(str(v)) if isinstance(v, str) else v for k, v in entry.items()}
+        entry_clean = {
+            k: clean_html(str(v)) if isinstance(v, str) else v for k, v in entry.items()
+        }
         entry_clean["source"] = source_name
         # Use 'link' as a unique identifier
         if await db.threat_feeds.find_one({"link": entry_clean.get("link")}):
@@ -42,6 +49,7 @@ async def fetch_and_store_feed(db, feed_url, source_name):
         await db.threat_feeds.insert_one(entry_clean)
         new_count += 1
     logger.info(f"Stored {new_count} new items from {source_name}.")
+
 
 async def main():
     logger.info("Starting threat data collection...")
@@ -51,5 +59,6 @@ async def main():
     await fetch_and_store_feed(db, GRAHAM_CLULEY_FEED, "graham-cluley")
     logger.info("Threat data collection completed.")
 
+
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

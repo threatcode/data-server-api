@@ -1,8 +1,9 @@
-from readyapi import APIRouter, Query, HTTPException
-from typing import Optional
 import os
+from typing import Optional
+
 from apify_client import ApifyClient
 from dotenv import load_dotenv
+from readyapi import APIRouter, HTTPException, Query
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ if not APIFY_TOKEN:
     raise RuntimeError("APIFY_TOKEN environment variable is required.")
 
 client = ApifyClient(APIFY_TOKEN)
+
 
 @router.get("/screenshot")
 async def get_screenshot(url: str = Query(...)):
@@ -29,7 +31,7 @@ async def get_screenshot(url: str = Query(...)):
                 "viewportWidth": 1280,
                 "delayAfterScrolling": 2500,
                 "waitUntilNetworkIdleAfterScrollTimeout": 30000,
-                "selectorsToHide": ""
+                "selectorsToHide": "",
             }
         )
         dataset_id = run["defaultDatasetId"]
@@ -37,6 +39,7 @@ async def get_screenshot(url: str = Query(...)):
         return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/twitter")
 async def get_twitter(query: str = Query(...), max_item: Optional[int] = Query(10)):
@@ -63,4 +66,4 @@ async def get_twitter(query: str = Query(...), max_item: Optional[int] = Query(1
         items = client.dataset(dataset_id).list_items()["items"]
         return items
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
