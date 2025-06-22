@@ -6,4 +6,5 @@ python-dotenv
 feedparser
 requests
 beautifulsoup4
-slowapi 
+slowapi
+httpx
