@@ -1,0 +1,31 @@
+name: CI/CD to EC2
+
+on:
+  push:
+    branches:
+      - main  # Or the branch you want to trigger the action
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install SSH client
+      run: sudo apt-get install openssh-client
+
+    - name: SSH into EC2 and pull latest code
+      env:
+        EC2_IP: ${{ secrets.EC2_IP }}
+        EC2_USER: ${{ secrets.EC2_USER }}
+        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      run: |
+        echo "${EC2_SSH_KEY}" > key.pem
+        chmod 600 key.pem
+
+        # SSH into the EC2 instance, pull the latest code, and run the build script
+        ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_IP << 'EOF'
+          cd data-server && git pull && sudo ./start.sh
+        EOF

@@ -1,0 +1,9 @@
+readyapi
+uvicorn[standard]
+motor
+elasticsearch
+python-dotenv
+feedparser
+requests
+beautifulsoup4
+slowapi 
