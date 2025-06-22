@@ -1,8 +1,0 @@
-FLASK_APP=app.main:app
-FLASK_ENV=development
-MONGO_URI=mongodb://localhost:27017
-MONGO_DB=data_server
-ELASTIC_CLOUD_ID=your_elastic_cloud_id
-ELASTIC_CLOUD_USERNAME=your_elastic_username
-ELASTIC_CLOUD_PASSWORD=your_elastic_password
-APIFY_TOKEN=your_apify_token 
